@@ -1,0 +1,24 @@
+# Arquivos compilados
+*.class
+
+# Pacotes gerados
+*.jar
+*.war
+*.ear
+
+# Diretórios de build
+/target/
+/build/
+/out/
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Logs e temporários
+*.log
+*.tmp
+*.swp
+*.bak
