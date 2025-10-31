@@ -26,4 +26,12 @@ O objetivo é implementar um **simulador em Java** para avaliar o desempenho de 
 ## Execução
 - java -cp out br.com.simulador.model.Main  
 
+## Execução - gráfico
+- mvnd clean compile
+- mvnd exec:java
+
+## Resultado 
+![Simulador de Páginas](imagens/paginacao.png)
+
+
 ---

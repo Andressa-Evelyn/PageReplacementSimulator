@@ -3,6 +3,14 @@ package br.com.simulador.ui;
 import br.com.simulador.model.PageReplacementSimulator;
 import br.com.simulador.algoritmos.*;
 
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.plot.CategoryPlot;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.data.category.DefaultCategoryDataset;
+import org.jfree.chart.renderer.category.BarRenderer;
+
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
@@ -17,7 +25,7 @@ public class SimulatorGUI extends JFrame {
     public SimulatorGUI() {
         super("💾 Simulador de Substituição de Páginas");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setSize(800, 500);
+        setSize(800, 550);
         setLocationRelativeTo(null);
         initComponents();
     }
@@ -36,11 +44,11 @@ public class SimulatorGUI extends JFrame {
 
         // 🔹 Título
         JLabel title = new JLabel("Simulador de Substituição de Páginas", JLabel.CENTER);
-        title.setFont(new Font("Segoe UI", Font.BOLD, 20));
+        title.setFont(new Font("Segoe UI", Font.BOLD, 22));
         title.setForeground(accentColor);
         mainPanel.add(title, BorderLayout.NORTH);
 
-        // 🔹 Painel de entrada (arquivo + frames + botão)
+        // 🔹 Painel de entrada
         JPanel inputPanel = new JPanel(new GridBagLayout());
         inputPanel.setBackground(bgColor);
         GridBagConstraints gbc = new GridBagConstraints();
@@ -88,7 +96,7 @@ public class SimulatorGUI extends JFrame {
 
         mainPanel.add(inputPanel, BorderLayout.CENTER);
 
-        // 🔹 Área de saída
+        // 🔹 Área de saída de texto
         outputArea = new JTextArea();
         outputArea.setEditable(false);
         outputArea.setFont(new Font("Consolas", Font.PLAIN, 14));
@@ -131,6 +139,7 @@ public class SimulatorGUI extends JFrame {
             int nfu = Nfu.executar(paginas, frames);
             int clock = Clock.executar(paginas, frames);
 
+            // Exibe resultados textuais
             StringBuilder sb = new StringBuilder();
             sb.append("📄 Sequência: ").append(paginas).append("\n");
             sb.append("🧠 Frames: ").append(frames).append("\n\n");
@@ -142,9 +151,60 @@ public class SimulatorGUI extends JFrame {
             sb.append("  • CLOCK : ").append(clock).append(" faltas de página\n");
 
             outputArea.setText(sb.toString());
+
+            // 🟦 Gera gráfico comparativo
+            mostrarGrafico(fifo, otimo, lfu, nfu, clock);
+
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, "Erro ao ler arquivo: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
         }
+    }
+
+    // 📊 Gera o gráfico comparativo com JFreeChart
+    private void mostrarGrafico(int fifo, int otimo, int lfu, int nfu, int clock) {
+        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+        dataset.addValue(fifo, "Faltas", "FIFO");
+        dataset.addValue(otimo, "Faltas", "ÓTIMO");
+        dataset.addValue(lfu, "Faltas", "LFU");
+        dataset.addValue(nfu, "Faltas", "NFU");
+        dataset.addValue(clock, "Faltas", "CLOCK");
+
+        JFreeChart chart = ChartFactory.createBarChart(
+                "Comparativo de Faltas de Página",
+                "Algoritmo",
+                "Número de Faltas",
+                dataset,
+                PlotOrientation.VERTICAL,
+                false, true, false
+        );
+
+        // 🎨 Personaliza o gráfico
+        CategoryPlot plot = (CategoryPlot) chart.getPlot();
+        plot.setBackgroundPaint(Color.WHITE);
+        plot.setOutlinePaint(null);
+        plot.setRangeGridlinePaint(new Color(180, 180, 180));
+
+        BarRenderer renderer = (BarRenderer) plot.getRenderer();
+        Color[] colors = {
+                new Color(70, 130, 180),
+                new Color(46, 139, 87),
+                new Color(255, 165, 0),
+                new Color(186, 85, 211),
+                new Color(220, 20, 60)
+        };
+        for (int i = 0; i < colors.length; i++) {
+            renderer.setSeriesPaint(i, colors[i % colors.length]);
+        }
+
+        ChartPanel chartPanel = new ChartPanel(chart);
+        chartPanel.setPreferredSize(new Dimension(650, 400));
+
+        JFrame graficoFrame = new JFrame("📊 Gráfico Comparativo");
+        graficoFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        graficoFrame.add(chartPanel);
+        graficoFrame.pack();
+        graficoFrame.setLocationRelativeTo(this);
+        graficoFrame.setVisible(true);
     }
 
     public static void main(String[] args) {
